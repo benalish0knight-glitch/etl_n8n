@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Serviço do n8n
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - '5678:5678'
+    volumes:
+      - ./n8n_data:/home/node/.n8n # Persistência de dados do n8n
+    environment:
+      - N8N_HOST=localhost # Define o host para uso local
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      # O mais importante: garante que os containers na mesma rede possam se comunicar
+      - N8N_BASIC_AUTH_ACTIVE=false 
+      
+  # Serviço da API Python
+  python_api:
+    build: 
+      context: ./python_api # Onde está o Dockerfile/código
+    ports:
+      - '5000:5000' # Porta da API Python
+    environment:
+      - PYTHONUNBUFFERED=1 # Para ver logs imediatamente
+    restart: unless-stopped
+
+networks:
+  default:
+    name: n8n_python_network
